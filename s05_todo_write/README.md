@@ -48,6 +48,9 @@ def run_todo_write(todos: list) -> str:
     print("\n".join(lines))
     return f"Updated {len(CURRENT_TODOS)} tasks"
 ```
+GY: 这个工具的作用：
+它是把"让 AI 学会做任务清单"这件事,翻译成模型和程序都能理解的标准化接口。 没有它,模型既不知道有这个能力,也不知道该用什么格式来用。
+
 
 工具定义和其他 5 个工具一起加入 dispatch map：
 

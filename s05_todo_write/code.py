@@ -149,6 +149,7 @@ def run_todo_write(todos: list) -> str:
     CURRENT_TODOS = todos
     lines = ["\n\033[33m## Current Tasks\033[0m"]
     for t in CURRENT_TODOS:
+        print("todo_task", t)
         icon = {"pending": " ", "in_progress": "\033[36m▸\033[0m", "completed": "\033[32m✓\033[0m"}[t["status"]]
         lines.append(f"  [{icon}] {t['content']}")
     print("\n".join(lines))
@@ -206,7 +207,7 @@ def permission_hook(block):
 
 def log_hook(block):
     """PreToolUse: log tool calls."""
-    print(f"\033[90m[HOOK] {block.name}\033[0m")
+    print(f"\033[90m[HOOK log_hook] {block.name}\033[0m")
     return None
 
 def context_inject_hook(query: str):

@@ -84,6 +84,7 @@ def run_bash(command: str) -> str:
 # ── The core pattern: a while loop that calls tools until the model stops ──
 def agent_loop(messages: list):
     while True:
+        print("messages", messages)
         response = client.messages.create(
             model=MODEL, system=SYSTEM, messages=messages,
             tools=TOOLS, max_tokens=8000,
@@ -98,9 +99,10 @@ def agent_loop(messages: list):
 
         # Execute each tool call, collect results
         results = []
+        print("response.content: ", response.content)
         for block in response.content:
             if block.type == "tool_use":
-                print(f"\033[33m$ {block.input['command']}\033[0m")
+                print(f"command: \033[33m$ {block.input['command']}\033[0m")
                 output = run_bash(block.input["command"])
                 print(output[:200])
                 results.append({
@@ -109,6 +111,7 @@ def agent_loop(messages: list):
                     "content": output,
                 })
 
+        print("results: ", results)
         # Feed tool results back, loop continues
         messages.append({"role": "user", "content": results})
 
@@ -130,8 +133,9 @@ if __name__ == "__main__":
         agent_loop(history)
         # Print the model's final text response
         response_content = history[-1]["content"]
+        print("response_content--: ", response_content)
         if isinstance(response_content, list):
             for block in response_content:
                 if getattr(block, "type", None) == "text":
-                    print(block.text)
+                    print("test: " + block.text)
         print()

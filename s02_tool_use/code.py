@@ -64,6 +64,7 @@ def run_bash(command: str) -> str:
 # ═══════════════════════════════════════════════════════════
 
 def safe_path(p: str) -> Path:
+    print("safe_path", p)
     path = (WORKDIR / p).resolve()
     if not path.is_relative_to(WORKDIR):
         raise ValueError(f"Path escapes workspace: {p}")
@@ -72,6 +73,7 @@ def safe_path(p: str) -> Path:
 
 def run_read(path: str, limit: int | None = None) -> str:
     try:
+        print("run_read", path)
         lines = safe_path(path).read_text().splitlines()
         if limit and limit < len(lines):
             lines = lines[:limit] + [f"... ({len(lines) - limit} more lines)"]
@@ -81,6 +83,7 @@ def run_read(path: str, limit: int | None = None) -> str:
 
 
 def run_write(path: str, content: str) -> str:
+    print("run_write", path, content)
     try:
         file_path = safe_path(path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -91,6 +94,7 @@ def run_write(path: str, content: str) -> str:
 
 
 def run_edit(path: str, old_text: str, new_text: str) -> str:
+    print("run_edit", old_text, new_text)
     try:
         file_path = safe_path(path)
         text = file_path.read_text()
@@ -104,6 +108,7 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
 
 def run_glob(pattern: str) -> str:
     import glob as g
+    print("run_glob", pattern)
     try:
         results = []
         for match in g.glob(pattern, root_dir=WORKDIR):
@@ -149,6 +154,7 @@ TOOL_HANDLERS = {
 
 def agent_loop(messages: list):
     while True:
+        print("messages", messages)
         response = client.messages.create(
             model=MODEL, system=SYSTEM, messages=messages,
             tools=TOOLS, max_tokens=8000,
@@ -158,11 +164,13 @@ def agent_loop(messages: list):
         if response.stop_reason != "tool_use":
             return
 
+        print("response.content", response.content)
         results = []
         for block in response.content:
             if block.type == "tool_use":
                 print(f"\033[33m> {block.name}\033[0m")
                 handler = TOOL_HANDLERS.get(block.name)
+                print("handler", handler)
                 output = handler(**block.input) if handler else f"Unknown: {block.name}"
                 print(str(output)[:200])
                 results.append({"type": "tool_result", "tool_use_id": block.id, "content": output})
@@ -187,4 +195,6 @@ if __name__ == "__main__":
         for block in history[-1]["content"]:
             if getattr(block, "type", None) == "text":
                 print(block.text)
+
+        print("---------------")    
         print()
